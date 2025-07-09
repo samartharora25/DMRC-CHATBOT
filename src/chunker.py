@@ -1,156 +1,208 @@
 import fitz
 from dataclasses import dataclass
 import re
-from collections import defaultdict
-
+from typing import List, Tuple
+import json
 @dataclass
 class SubtopicBlock:
-    chapter: str
-    title: str
-    page_range: tuple
+    chapter_id: str
+    chapter_title: str
+    subtopic_title: str
+    page_range: Tuple[int, int]
     text: str
 
+
+@dataclass
+class ChapterBlock:
+    chapter_id: str
+    chapter_title: str
+    page_range: Tuple[int, int]
+    text: str
+    subtopics: List[SubtopicBlock]
+
 class PDFChunker:
+    HEADING_FONT = "AGaramondPro-Bold"
+    HEADING_COLOR = 31926  # Hex for detected heading color
+
     def __init__(self, pdf_path):
+        print(f"Opening PDF: {pdf_path}")
         self.doc = fitz.open(pdf_path)
-        self.index = {}
-        # Load pages 5 to 10 (0-based: 4–9)
-        for i in range(4, 10):
-            self.index[i] = self.doc.load_page(i)
 
-        # Extract text from each index page
-        self.index_text_map = {}
-        for idx, page in self.index.items():
-            self.index_text_map[f"index_text{idx - 3}"] = page.get_text("blocks")
+    def is_subtopic_heading(self, text, font_name, color_val):
+        """
+        Detect only subtopic headings with very specific criteria
+        """
+        # Must be uppercase and reasonable length
+        if not (text == text.upper() and 3 <= len(text.split()) <= 8):
+            return False
+        
+        # Skip obvious non-headings
+        if text.isdigit() or text in ['•', '*', ':', '(', ')', '@']:
+            return False
+        
+        # Skip chapter titles
+        if text.startswith('CHAPTER '):
+            return False
+        
+        # Skip very short or very long text
+        if len(text) < 5 or len(text) > 50:
+            return False
+        
+        # Specific font and color for subtopics
+        return font_name == "Cambria-Bold" and color_val == 32183
 
-        print("Mapped pages in self.index and their text:")
-        for idx in self.index:
-            print(f"Page {idx + 1} mapped to self.index[{idx}]")
-            print("Text:")
-            print(self.index[idx].get_text("blocks"))
+    def parse_toc_structure(self, start_page=4, end_page=10, offset=10, last_page=208):
+        print("Parsing TOC structure...")
+        toc = {}
+        index_pages = {i: self.doc.load_page(i) for i in range(start_page, end_page)}
 
-    def parse_toc_structure(self, last_page=208):
         all_blocks = []
-        for page_idx, blocks in self.index_text_map.items():
-            for block in blocks:
+        for idx, page in index_pages.items():
+            print(f"Reading index page {idx + 1}")
+            for block in page.get_text("blocks"): # type: ignore
                 x0 = block[0]
                 text = block[4].strip()
                 if not text:
                     continue
                 for line in text.splitlines():
                     line = line.strip()
-                    if not line or not re.search(r'\d{1,3}$', line):
+                    match = re.match(r'^(.*?)\s*[.\s]{5,}\s*(\d{1,3})$', line)
+                    if not match:
                         continue
-                    all_blocks.append({
-                        "x0": x0,
-                        "text": line
-                    })
 
-        # Step 1: Parse blocks into classified entries
-        entries = []
-        for block in all_blocks:
-            x0 = block["x0"]
-            line = block["text"]
+                    title = match.group(1).strip()
+                    page_num = int(match.group(2)) + offset
 
-            # Extract title and page
-            match = re.match(r'^(.*?)\s*[.\s]{5,}\s*(\d{1,3})$', line)
-            if not match:
-                continue
+                    chapter_match = re.match(r'^(Chapter\s+\d+)\s+(.*)', title)
+                    if chapter_match:
+                        chapter_id = chapter_match.group(1)
+                        chapter_name = chapter_match.group(2).strip()
+                        print(f"Detected chapter: {chapter_id} - {chapter_name} at page {page_num}")
+                        toc[chapter_id] = {
+                            "name": chapter_name,
+                            "page": {"start": page_num, "end": last_page}
+                        }
 
-            title = match.group(1).strip()
-            page = int(match.group(2)) + 10  # offset applied
+        chapter_ids = list(toc.keys())
+        for i in range(len(chapter_ids)):
+            if i < len(chapter_ids) - 1:
+                toc[chapter_ids[i]]["page"]["end"] = toc[chapter_ids[i + 1]]["page"]["start"] - 1
+            else:
+                toc[chapter_ids[i]]["page"]["end"] = last_page
 
-            if x0 <= 72:  # chapter
-                chapter_match = re.match(r'^(Chapter\s+\d+)\s+(.*)', title)
-                if chapter_match:
-                    entries.append({
-                        "type": "chapter",
-                        "chapter_id": chapter_match.group(1),
-                        "name": chapter_match.group(2).strip(),
-                        "page": page
-                    })
-            else:  # subtopic
-                entries.append({
-                    "type": "subtopic",
-                    "name": title,
-                    "page": page
-                })
-
-        # Step 2: Precompute chapter positions
-        chapter_indices = [i for i, e in enumerate(entries) if e["type"] == "chapter"]
-
-        # Step 3: Build structured TOC
-        toc = {}
-        current_chapter = None
-
-        for i, entry in enumerate(entries):
-            this_page = entry["page"]
-
-            if entry["type"] == "chapter":
-                # Find the start of the next chapter
-                next_chapter_index = next((j for j in chapter_indices if j > i), None)
-                next_page = entries[next_chapter_index]["page"] if next_chapter_index is not None else last_page
-                end_page = next_page - 1
-
-                current_chapter = entry["chapter_id"]
-                toc[current_chapter] = {
-                    "name": entry["name"],
-                    "page": {"start": this_page, "end": end_page},
-                    "subtopics": []
-                }
-
-            elif entry["type"] == "subtopic" and current_chapter:
-                # Subtopic end = start of next entry - 1 (or same chapter’s end)
-                next_page = entries[i + 1]["page"] if i + 1 < len(entries) else toc[current_chapter]["page"]["end"] + 1
-                end_page = next_page - 1
-
-                toc[current_chapter]["subtopics"].append({
-                    "name": entry["name"],
-                    "page": {"start": this_page, "end": end_page}
-                })
+        print("TOC parsing completed. Chapters found:")
+        for chapter_id, data in toc.items():
+            print(f"  {chapter_id}: {data['name']} (pages {data['page']['start']} to {data['page']['end']})")
 
         return toc
 
     def extract_subtopic_and_chapter_chunks(self, toc):
+        print("\nExtracting subtopic and chapter chunks...")
         subtopic_chunks = []
         chapter_chunks = []
 
         for chapter_id, info in toc.items():
+            chapter_title = info["name"]
             chapter_start, chapter_end = info["page"]["start"], info["page"]["end"]
             chapter_text = ""
 
-            # Extract chapter-level text
-            for page_num in range(chapter_start - 1, chapter_end):  # 0-based
+            print(f"\nProcessing {chapter_id}: {chapter_title} (pages {chapter_start}-{chapter_end})")
+
+            subtopics = []
+            current_subtopic_title = None
+            current_buffer = []
+            subtopic_start_page = chapter_start
+
+            for page_num in range(chapter_start - 1, chapter_end):
+                print(f"  Reading page {page_num + 1}")
                 page = self.doc.load_page(page_num)
-                chapter_text += page.get_text("text") + "\n" # type: ignore 
+                blocks = page.get_text("dict")["blocks"] # type: ignore
 
-            # Save full chapter
-            chapter_chunks.append(SubtopicBlock(
-                chapter=chapter_id,
-                title=info["name"],
+                for block in blocks:
+                    for line in block.get("lines", []):
+                        for span in line.get("spans", []):
+                            text = span["text"].strip()
+                            if not text:
+                                continue
+
+                            font_name = span.get("font", "")
+                            color_val = span.get("color", 0)
+
+                            if text == text.upper() and len(text.split()) <= 8:
+                                print(f"[DEBUG] Page {page_num+1}: '{text}' | Font: {font_name} | Color: {color_val}")
+                            
+                            # Use the specific subtopic heading detection
+                            is_heading = self.is_subtopic_heading(text, font_name, color_val)
+
+                            if is_heading:
+                                print(f"    [HEADING DETECTED] '{text}' on page {page_num + 1} (Font: {font_name}, Color: {color_val})")
+                                if current_subtopic_title:
+                                    sub_text = " ".join(current_buffer).strip()
+                                    print(f"      -> Saving subtopic: {current_subtopic_title} (pages {subtopic_start_page}-{page_num + 1})")
+                                    sub_block = SubtopicBlock(
+                                        chapter_id=chapter_id,
+                                        chapter_title=chapter_title,
+                                        subtopic_title=current_subtopic_title,
+                                        page_range=(subtopic_start_page, page_num + 1),
+                                        text=sub_text
+                                    )
+                                    subtopic_chunks.append(sub_block)
+                                    subtopics.append(sub_block)
+
+                                current_subtopic_title = text
+                                current_buffer = []
+                                subtopic_start_page = page_num + 1
+                            else:
+                                current_buffer.append(text)
+
+                chapter_text += page.get_text("text") + "\n" # type: ignore
+
+            if current_subtopic_title and current_buffer:
+                sub_text = " ".join(current_buffer).strip()
+                print(f"    -> Saving final subtopic: {current_subtopic_title} (pages {subtopic_start_page}-{chapter_end})")
+                sub_block = SubtopicBlock(
+                    chapter_id=chapter_id,
+                    chapter_title=chapter_title,
+                    subtopic_title=current_subtopic_title,
+                    page_range=(subtopic_start_page, chapter_end),
+                    text=sub_text
+                )
+                subtopic_chunks.append(sub_block)
+                subtopics.append(sub_block)
+
+            chapter_block = ChapterBlock(
+                chapter_id=chapter_id,
+                chapter_title=chapter_title,
                 page_range=(chapter_start, chapter_end),
-                text=chapter_text.strip()
-            ))
+                text=chapter_text.strip(),
+                subtopics=subtopics
+            )
+            print(f"  -> Chapter '{chapter_title}' done. {len(subtopics)} subtopics found.")
+            chapter_chunks.append(chapter_block)
 
-            # Extract subtopics inside chapter
-            for sub in info["subtopics"]:
-                sub_start, sub_end = sub["page"]["start"], sub["page"]["end"]
-                sub_text = ""
-                for page_num in range(sub_start - 1, sub_end):
-                    page = self.doc.load_page(page_num)
-                    sub_text += page.get_text("text") + "\n" # type: ignore
-
-                subtopic_chunks.append(SubtopicBlock(
-                    chapter=chapter_id,
-                    title=sub["name"],
-                    page_range=(sub_start, sub_end),
-                    text=sub_text.strip()
-                ))
-
+        print("\nExtraction completed.")
         return subtopic_chunks, chapter_chunks
 
+    def save_chunks(self, subtopics, chapters, filename):  # this function is just for testing purposes
+        # Ensure the file is saved as .txt, not .pdf, to avoid PDF structure errors
+        if filename.lower().endswith('.pdf'):
+            filename = filename[:-4] + '.txt'
+            print(f"Warning: Changed output file extension to .txt to avoid PDF corruption.")
 
-
+        # Prepare data for JSON serialization
+        data = {
+            "subtopics": [sub.__dict__ for sub in subtopics],
+            "chapters": [
+            {
+                **chap.__dict__,
+                "subtopics": [s.__dict__ for s in chap.subtopics]
+            }
+            for chap in chapters
+            ]
+        }
+        with open(filename, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2, default=str)
+        print(f"✅ Saved chunks to {filename}")
 
     def close(self):
         self.doc.close()
