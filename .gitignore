@@ -11,4 +11,5 @@ wheels/
 
 chunks.*
 models/*
+hr_chroma_db/*
 qwen3_embedding_model
