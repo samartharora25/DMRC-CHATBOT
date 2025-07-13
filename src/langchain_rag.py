@@ -1,3 +1,5 @@
+# src/langchain_rag.py
+
 import json
 import torch
 from typing import List, Dict, Any
@@ -250,22 +252,6 @@ Answer:
         # You can add your local LLM here
         print("⚠️ Note: Add your local LLM configuration here")
         
-        # Example with LlamaCpp (uncomment and modify as needed):
-        # llm = LlamaCpp(
-        #     model_path=llm_model_path,
-        #     temperature=0.1,
-        #     max_tokens=500,
-        #     top_p=1
-        # )
-        # 
-        # self.qa_chain = RetrievalQA.from_chain_type(
-        #     llm=llm,
-        #     chain_type="stuff",
-        #     retriever=retriever,
-        #     chain_type_kwargs={"prompt": prompt}
-        # )
-        
-        # For testing, just store the retriever
         self.retriever = retriever
         
         print("✅ Retrieval chain setup complete")

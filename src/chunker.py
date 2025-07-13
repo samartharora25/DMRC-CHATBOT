@@ -1,3 +1,5 @@
+# src/chunker.py
+
 import fitz
 from dataclasses import dataclass
 import re
@@ -171,8 +173,7 @@ class PDFChunker:
         Args:
             start_page (int, optional): The starting page number of the TOC (0-indexed). Defaults to 4.
             end_page (int, optional): The ending page number of the TOC (0-indexed). Defaults to 10.
-            offset (int, optional): Page number offset to adjust for differences between 
-                                  TOC page numbers and actual PDF page numbers. Defaults to 10.
+            offset (int, optional): Page number offset to adjust for differences between TOC page numbers and actual PDF page numbers. Defaults to 10.
             last_page (int, optional): The last page number of the document. Defaults to 208.
             
         Returns:
@@ -258,8 +259,8 @@ class PDFChunker:
         
         Args:
             toc (dict): The table of contents structure returned by parse_toc_structure().
-                       Must contain chapter IDs as keys with "name" and "page" information.
-                       
+                        Must contain chapter IDs as keys with "name" and "page" information.
+
         Returns:
             tuple: A tuple containing two lists:
                 - subtopic_chunks (List[SubtopicBlock]): List of all extracted subtopic blocks

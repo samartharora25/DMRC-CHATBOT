@@ -8,8 +8,10 @@ wheels/
 
 # Virtual environments
 .venv
-
+.env
 chunks.*
 models/*
 hr_chroma_db/*
 qwen3_embedding_model
+
+.vscode/

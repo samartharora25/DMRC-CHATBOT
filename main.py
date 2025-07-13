@@ -1,8 +1,15 @@
+# main.py
+
+import time
 from src.chunker import PDFChunker
 from src.embedder import Embedder
 from src.langchain_rag import HRDocumentRAG
 import json
 import os
+from src.summarizer import HRPolicySummarizer, SummarizationConfig, ModelManager, create_test_document
+from rich.console import Console
+
+console = Console()
 
 def main():
     """Complete RAG pipeline: PDF processing -> Chunking -> Embeddings -> Vector Store"""
@@ -47,7 +54,64 @@ def main():
         rag.build_rag_system(force_rebuild=True)
         
         # Phase 4: System Summary
-        print("\n📊 Phase 4: System Summary")
+        console.print("\n🚀 [bold cyan]HR Policy Summarizer - Refactored Version[/bold cyan]")
+        # Configuration
+        config = SummarizationConfig(
+            temperature=0.1,
+            repetition_penalty=1.1,
+            preserve_structure=True,
+            redact_sensitive_info=True
+        )
+        
+        # Initialize components
+        model_manager = ModelManager()
+        try:
+            # Load model
+            if not model_manager.load_model(config):
+                console.print("❌ [red]Failed to load model[/red]")
+                return
+            
+            llm = model_manager.get_llm()
+            if not llm:
+                console.print("❌ [red]Failed to get LLM wrapper[/red]")
+                return
+            
+            # Create summarizer
+            summarizer = HRPolicySummarizer(llm, config)
+            
+            # Test with sample document
+            test_doc = create_test_document()
+            console.print("\n📄 [yellow]Processing test document...[/yellow]")
+            
+            result = summarizer.summarize_document(test_doc)
+            
+            # Display results
+            if result.get('processing_successful'):
+                stats = result['metadata']['summary_stats']
+                console.print(f"\n📊 [green]Results:[/green]")
+                console.print(f"Original: {stats['original_words']} words")
+                console.print(f"Summary: {stats['summary_words']} words")
+                console.print(f"Compression: {stats['compression_ratio']:.2f}")
+                console.print(f"Privacy Redacted: {result['privacy_redacted']}")
+                
+                console.print(f"\n📝 [cyan]Generated Summary:[/cyan]")
+                console.print(result['structured_summary'])
+            else:
+                console.print(f"❌ [red]Processing failed: {result.get('error', 'Unknown error')}[/red]")
+            
+            # Brief pause before cleanup
+            time.sleep(3)
+            
+        except Exception as e:
+            console.print(f"❌ [red]Error: {e}[/red]")
+            import traceback
+            traceback.print_exc()
+        
+        finally:
+            model_manager.cleanup()
+            console.print("\n✅ [green]Process completed![/green]")
+
+
         stats = rag.get_stats()
         
         file_sizes = {}
