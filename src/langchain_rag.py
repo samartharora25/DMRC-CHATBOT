@@ -298,7 +298,7 @@ Answer:
             self.setup_vector_store(documents)
         
         # Setup retrieval chain
-        self.setup_retrieval_chain()
+        # self.setup_retrieval_chain()
         
         print("✅ RAG system ready!")
     

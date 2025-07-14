@@ -18,6 +18,12 @@ def load_model():
     try:
         console.print("\n🔁 [yellow]Verifying tokenizer and model loading...[/yellow]")
         tokenizer = AutoTokenizer.from_pretrained(model_dir , trust_remote_code=True)
+        console.print("✅ [green]Tokenizer loaded successfully.[/green]")
+        console.print("EOS token:", tokenizer.eos_token)
+        console.print("BOS token:", tokenizer.bos_token)
+        console.print("UNK token:", tokenizer.unk_token)
+        console.print("PAD token:", tokenizer.pad_token)
+        console.print("Model ID:", model_id)
         max_memory = {
             0: "6GiB",  # ✅ Key is int (GPU ID), value is str (allowed)
             "cpu": "6GiB"  # ✅ Key is str, value is str — both acceptable

@@ -8,6 +8,8 @@ import json
 import os
 from src.summarizer import HRPolicySummarizer, SummarizationConfig, ModelManager, create_test_document
 from rich.console import Console
+import chromadb
+from langchain.schema import Document
 
 console = Console()
 
@@ -22,16 +24,16 @@ def main():
     
     try:
         # Phase 1: Document Processing
-        print("📄 Phase 1: Document Processing")
-        chunker = PDFChunker(pdf_path)
-        toc = chunker.parse_toc_structure()
-        subtopic_chunks, chapter_chunks = chunker.extract_subtopic_and_chapter_chunks(toc)
+        # print("📄 Phase 1: Document Processing")
+        # chunker = PDFChunker(pdf_path)
+        # toc = chunker.parse_toc_structure()
+        # subtopic_chunks, chapter_chunks = chunker.extract_subtopic_and_chapter_chunks(toc)
         
-        print(f"   ✅ Extracted {len(subtopic_chunks)} subtopics, {len(chapter_chunks)} chapters")
+        # print(f"   ✅ Extracted {len(subtopic_chunks)} subtopics, {len(chapter_chunks)} chapters")
         
-        # Save chunks
-        chunker.save_chunks(subtopic_chunks, chapter_chunks, chunks_file)
-        chunker.close()
+        # # Save chunks
+        # chunker.save_chunks(subtopic_chunks, chapter_chunks, chunks_file)
+        # chunker.close()
         
         # # Phase 2: Embeddings (Optional - for standalone use)
         # print("\n🔮 Phase 2: Creating Embeddings")
@@ -51,8 +53,8 @@ def main():
         )
         
         # Build the complete RAG system
-        rag.build_rag_system(force_rebuild=True)
-        
+        rag.build_rag_system(force_rebuild=False)
+
         # Phase 4: System Summary
         console.print("\n🚀 [bold cyan]HR Policy Summarizer - Refactored Version[/bold cyan]")
         # Configuration
@@ -79,25 +81,74 @@ def main():
             # Create summarizer
             summarizer = HRPolicySummarizer(llm, config)
             
-            # Test with sample document
-            test_doc = create_test_document()
-            console.print("\n📄 [yellow]Processing test document...[/yellow]")
+            # # Test with sample document
+            # test_doc = create_test_document()
+            # console.print("\n📄 [yellow]Processing test document...[/yellow]")
             
-            result = summarizer.summarize_document(test_doc)
+            # result = summarizer.summarize_document(test_doc)
             
+            # summarize all documents in the RAG system
+            console.print("\n📄 [yellow]Processing all documents in RAG system...[yellow]")
+            # Load all documents directly from ChromaDB vector store
+            client = chromadb.PersistentClient(path=chroma_db_path)
+            collection = client.get_collection("hr_policies")
+
+            # Retrieve both content and metadata
+            chroma_docs = collection.get(include=["documents", "metadatas"])
+            raw_docs = chroma_docs.get("documents", [])
+            raw_metas = chroma_docs.get("metadatas", [])
+
+            if not raw_docs:
+                console.print("❌ [red]No documents found in the vector store[/red]")
+                return
+
+            # Restore Document objects, filtering out chapter-level docs
+            docs = []
+            for content, metadata in zip(raw_docs, raw_metas): # type: ignore
+                if metadata.get("type") != "subtopic":
+                    continue  # Skip chapter-level documents
+
+                doc = Document(
+                    page_content=content,
+                    metadata=metadata
+                )
+                docs.append(doc)
+
+            # Summarize all documents
+            result = summarizer.summarize_batch(docs) # type: ignore
+
             # Display results
-            if result.get('processing_successful'):
-                stats = result['metadata']['summary_stats']
-                console.print(f"\n📊 [green]Results:[/green]")
-                console.print(f"Original: {stats['original_words']} words")
-                console.print(f"Summary: {stats['summary_words']} words")
-                console.print(f"Compression: {stats['compression_ratio']:.2f}")
-                console.print(f"Privacy Redacted: {result['privacy_redacted']}")
-                
-                console.print(f"\n📝 [cyan]Generated Summary:[/cyan]")
-                console.print(result['structured_summary'])
-            else:
-                console.print(f"❌ [red]Processing failed: {result.get('error', 'Unknown error')}[/red]")
+            for res in result:
+                if res.get('processing_successful'):
+                    stats = res['metadata']['summary_stats']
+                    console.print(f"\n📊 [green]Results:[/green]")
+                    console.print(f"Original: {stats['original_words']} words")
+                    console.print(f"Summary: {stats['summary_words']} words")
+                    console.print(f"Compression: {stats['compression_ratio']:.2f}")
+                    console.print(f"Privacy Redacted: {res['privacy_redacted']}")
+                    
+                    # Save and append all summaries in a JSON file
+                    summaries_file = "summaries.json"
+                    summaries = []
+
+                    # Load existing summaries if file exists
+                    if os.path.exists(summaries_file):
+                        with open(summaries_file, "r", encoding="utf-8") as f:
+                            try:
+                                summaries = json.load(f)
+                            except json.JSONDecodeError:
+                                summaries = []
+
+                    # Append the full result dictionary
+                    summaries.append(res)
+
+                    # Save back to file
+                    with open(summaries_file, "w", encoding="utf-8") as f:
+                        json.dump(summaries, f, indent=2, ensure_ascii=False)
+
+                    console.print(f"\n📝 [blue]Summary saved to {summaries_file}[/blue]")
+                else:
+                    console.print(f"❌ [red]Processing failed: {res.get('error', 'Unknown error')}[/red]")
             
             # Brief pause before cleanup
             time.sleep(3)
@@ -112,25 +163,25 @@ def main():
             console.print("\n✅ [green]Process completed![/green]")
 
 
-        stats = rag.get_stats()
+        # stats = rag.get_stats()
         
-        file_sizes = {}
-        for file_path in [chunks_file, embeddings_file]:
-            if os.path.exists(file_path):
-                file_sizes[file_path] = f"{os.path.getsize(file_path) / 1024:.1f} KB"
+        # file_sizes = {}
+        # for file_path in [chunks_file, embeddings_file]:
+        #     if os.path.exists(file_path):
+        #         file_sizes[file_path] = f"{os.path.getsize(file_path) / 1024:.1f} KB"
         
-        print(f"   • Subtopics: {stats['total_subtopics']}")
-        print(f"   • Chapters: {stats['total_chapters']}")
-        print(f"   • Vector Store: {stats['documents_in_vectorstore']} documents")
-        print(f"   • Files Created:")
-        for file_path, size in file_sizes.items():
-            print(f"     - {file_path}: {size}")
+        # print(f"   • Subtopics: {stats['total_subtopics']}")
+        # print(f"   • Chapters: {stats['total_chapters']}")
+        # print(f"   • Vector Store: {stats['documents_in_vectorstore']} documents")
+        # print(f"   • Files Created:")
+        # for file_path, size in file_sizes.items():
+        #     print(f"     - {file_path}: {size}")
         
-        print(f"\n✅ RAG System Ready!")
-        print(f"   Vector Store: {chroma_db_path}")
-        print(f"   Use the HRDocumentRAG class for queries")
+        # print(f"\n✅ RAG System Ready!")
+        # print(f"   Vector Store: {chroma_db_path}")
+        # print(f"   Use the HRDocumentRAG class for queries")
         
-        return rag
+        # return rag
         
     except FileNotFoundError as e:
         print(f"❌ File not found: {e}")

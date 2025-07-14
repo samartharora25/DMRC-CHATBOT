@@ -10,10 +10,8 @@ import time
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from accelerate import infer_auto_device_map, dispatch_model
 from rich.console import Console
-from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from langchain.schema import Document
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.llms.base import LLM
 from typing import List, Dict, Any, Optional
 import re
@@ -56,18 +54,23 @@ class LlamaLLM(LLM):
                 return_tensors="pt",
                 padding=True
             )
+            tokens = self._tokenizer(prompt, return_tensors="pt")
+            logger.info(f"🧠 Prompt token length: {len(tokens['input_ids'][0])}")
+            print("Max context length:", self._model.config.max_position_embeddings)
+            print("Tokenizer max length:", self._tokenizer.model_max_length)
             device = next(self._model.parameters()).device
             inputs = {k: v.to(device) for k, v in inputs.items()}
 
             with torch.no_grad():
                 outputs = self._model.generate(
                     **inputs,
-                    temperature=self._config.temperature,
-                    do_sample=self._config.temperature > 0,
+                    temperature=self._config.temperature or 0.7,
+                    do_sample=True,
                     pad_token_id=self._tokenizer.eos_token_id,
                     eos_token_id=self._tokenizer.eos_token_id,
-                    repetition_penalty=self._config.repetition_penalty,
-                    max_new_tokens=4000
+                    repetition_penalty=self._config.repetition_penalty or 1.1,
+                    max_new_tokens=2000,
+                    num_beams=2  # Optional: helps improve output quality
                 )
 
             response = self._tokenizer.decode(
@@ -127,7 +130,7 @@ class ModelManager:
             # Load model without device mapping first
             self.model = AutoModelForCausalLM.from_pretrained(
                 self.model_path,
-                torch_dtype=torch.bfloat16,
+                torch_dtype=torch.float16,
                 trust_remote_code=True,
                 device_map=None
             )
@@ -192,107 +195,89 @@ class ContentPreprocessor:
         content = re.sub(r'(\n|^)([A-Z\s]{3,})\n', r'\1**\2**\n', content)
         
         return content
-    
-    @staticmethod
-    def extract_structure_hints(content: str) -> Dict[str, Any]:
-        """Extract structural hints from content"""
-        hints = {
-            'has_numbered_steps': bool(re.search(r'\d+\.\s', content)),
-            'has_bullet_points': bool(re.search(r'[•\-\*]\s', content)),
-            'has_sections': bool(re.search(r'\n\s*[A-Z][A-Z\s]+\n', content)),
-            'has_procedures': bool(re.search(r'(process|procedure|steps|requirements)', content, re.IGNORECASE)),
-            'estimated_complexity': 'high' if len(content.split()) > 500 else 'medium' if len(content.split()) > 200 else 'low'
-        }
-        return hints
-
 class PromptBuilder:
     """Builds dynamic prompts based on content characteristics"""
     
     def __init__(self, config: SummarizationConfig):
         self.config = config
     
-    def build_summarization_prompt(self, content: str, metadata: Dict[str, Any], structure_hints: Dict[str, Any]) -> str:
+    def build_summarization_prompt(self, content: str, metadata: Dict[str, Any],) -> str:
         """Build a dynamic prompt based on content characteristics"""
 
-        base_prompt = """You are a highly accurate and detail-oriented HR policy summarizer. Your job is to generate a **detailed, complete summary** that preserves all critical HR rules and procedures in structured bullet points.
+        base_prompt = ("<|begin_of_text|>"
+    "<|start_header_id|>system<|end_header_id|>\n"
+    "You are an HR policy expert trained in summarizing legal, procedural, and financial documents "
+    "with absolute fidelity to the original logic and instructions. Your task is to summarize long HR policy documents "
+    "into a structured, detailed format suitable for downstream LLM training and Q/A generation.\n"
+    "You must treat all inputs as sensitive and authoritative. Pay close attention to clauses, tables, nested rules, conditional logic, legal structures, and fee schedules.\n"
+    "Never hallucinate or omit information. Extract and preserve exact rules, compliance triggers, approval flows, and penalty terms.\n"
+    "Always retain field-level detail even from annexures or legal agreements. Use markdown formatting for clarity.\n"
+    "Output must be at least 80% the length of the input.\n"
+    "<|eot_id|>\n\n"
 
-## INPUT CONTENT:
-{content}
+    "<|start_header_id|>user<|end_header_id|>\n"
+    "## INPUT CONTENT:\n"
+    f"{content}\n\n"
+    "## DOCUMENT CONTEXT:\n"
+    f"- Chapter: {metadata.get('chapter_title', '')}\n"
+    f"- Subsection: {metadata.get('subsection_title', '')}\n\n"
 
-## DOCUMENT CONTEXT:
-- Chapter: {chapter_title}
-- Section: {subtopic_title}
+    "## STRUCTURE HINTS:\n"
+    "- This input contains clauses, bullet points, and detailed policy tables.\n"
+    "- A housing agreement (annex) is embedded, with legal language requiring careful extraction.\n"
+    "- Use separate markdown sections for rules, penalties, fee tables, agreement terms, and Director discretion powers.\n"
+    "- Include tables using markdown syntax where possible.\n"
+    "- Preserve policy logic (if/then, exceptions, notices, penalties, time-based retention)\n"
+    "- Ensure section titles like `Guest Rules`, `Improper Use`, `Post-Retirement Housing`, `Overstay Charges`, and `Agreement Terms` appear as headers if found in input.\n"
+    "- Do NOT repeat information unless the policy itself repeats for clarification.\n"
+    "- Output should reflect all structured lists, document-specific clauses, and embedded annexures.\n"
+    "<|eot_id|>\n\n"
 
-## ✳️ TASK GOAL:
-Summarize the content while preserving:
-- All key actions, responsibilities, and rules
-- Procedural sequences and if-then conditions
-- Timeframes, deadlines, exceptions, and penalties
-- Any legal, financial, or disciplinary consequences
+    "<|start_header_id|>assistant<|end_header_id|>\n"
+    "### 📘 Overview\n"
+    "Summarize the purpose and scope of this subsection in 2–4 lines.\n\n"
 
-The summary must **not miss any numbered step**, **must not merge unrelated actions**, and **must retain specificity** of rules, amounts, and conditions.
+    "### 🔑 Detailed Rules & Procedures\n"
+    "- Break into clear markdown sections like:\n"
+    "  - ✅ Eligibility and Housing Types\n"
+    "  - 📊 Allotment Rules and Waitlist Conditions\n"
+    "  - 🔁 Leave, Resignation, Retirement, and Death\n"
+    "  - 🛠️ Maintenance and Access\n"
+    "  - 🚫 Usage Restrictions and Penalties\n"
+    "  - 💸 License Fees and Deductions\n"
+    "  - 📑 Housing Agreement Legal Terms\n"
+    "  - ⚖️ Powers and Overrides by Director\n"
+    "  - 📎 Guest House, Social/Religious Use, Charges\n"
 
-## 🔒 PRIVACY REDACTION
-Automatically replace any sensitive info with `[REDACTED]`, including:
-- Names, emails, phone numbers
-- Addresses, employee IDs
-- Financial figures or salary info
-- Legal identifiers or document codes
+    "### 📝 Tables and Annexures\n"
+    "- Use markdown tables to retain:\n"
+    "  - License Fees by House Type\n"
+    "  - Overstay Charges\n"
+    "  - Daily Use Charges for Religious/Social Use\n"
+    "  - Gas/Utility/Maintenance Fee clauses (if mentioned)\n"
 
-## ✅ FORMAT REQUIREMENTS:
+    "### 📎 Legal Terms from Agreement\n"
+    "- Convert the annexure into a plain-English, clause-by-clause breakdown\n"
+    "- Use subpoints for each term with the exact implications\n"
+    "- Example:\n"
+    "  - 📝 Licensee not tenant\n"
+    "  - 🚫 No commercial use\n"
+    "  - ❗ No subletting or unauthorized guests\n"
+    "  - 🔐 Revocation right reserved by employer\n"
 
-### 📘 Overview
-1-2 lines about the purpose of this policy.
+    "### ⚠️ Violations and Consequences\n"
+    "- List each rule's consequence clearly\n"
+    "- Highlight actions like immediate cancellation, deduction from dues, loss of retirement benefits, or facility withdrawal\n"
 
-### 🔑 Key Procedures
-Use **grouped bullet points** to describe:
-- Eligibility and allocation
-- Responsibilities of the employee
-- Procedures for leave, resignation, retirement, etc.
-- Financial obligations (rent, fees, deductions)
-- Rights and restrictions (use of premises, subletting, guests)
-- Penalties and enforcement conditions
+    "### 📝 Additional Notes\n"
+    "- Include any edge-case rules or unusual exceptions\n"
+    "- Always include Director’s override logic if present\n"
 
-Use bullets like:
-- ✅ Clear obligations
-- ❗ Conditions and exceptions
-- 🔁 Re-entry or reallocation conditions
+    "---\n\n"
+    "🔐 Redact all personally identifiable info: names, emails, Emp.IDs, house numbers if tied to people, and signature blocks. Use `[REDACTED]`.\n"
+    "🧠 Remember: This summary is meant for fine-tuning an LLM. Do NOT compress aggressively. Retain all granular logic.\n"
+    "<|eot_id|>")
 
-### 📎 Requirements & Deadlines
-Explicitly mention:
-- Timeframes (e.g. 30-day notice)
-- Retention periods
-- Cut-off rules and decision-making authorities
-- Approval conditions or documentation needed
-
-## ⛔ DO NOT:
-- Skip any important clause, rule, or timeline
-- Use abstract language or vague generalizations
-- Merge unrelated concepts into single bullets
-- Omit license fees, overstay rules, or approval conditions
-
-
-## ✍️ TARGET OUTPUT:
-Adjust summary length **based on input length**:
-- For long documents (2,000+ words), retain more detail; compression should not exceed **40–60%**.
-- Preserve full procedural clarity, legal implications, and nested clauses.
-- Goal: Summary may be **800–1,200 words** for 3,000–4,000 word documents.
-
-Now generate the summary:"""
-
-        # Customize prompt based on structure hints
-        if structure_hints.get('has_numbered_steps'):
-            base_prompt = base_prompt.replace(
-                "## Key Procedures",
-                "## Step-by-Step Procedures"
-            )
-        
-        if structure_hints.get('estimated_complexity') == 'high':
-            base_prompt = base_prompt.replace(
-                "[Concise summary",
-                "[Comprehensive summary"
-            )
-        
         return base_prompt
 
 class HRPolicySummarizer:
@@ -309,13 +294,11 @@ class HRPolicySummarizer:
         try:
             # Preprocess content
             clean_content = self.preprocessor.clean_content(document.page_content)
-            structure_hints = self.preprocessor.extract_structure_hints(clean_content)
             
             # Build dynamic prompt
             prompt_template = self.prompt_builder.build_summarization_prompt(
                 clean_content, 
-                document.metadata, 
-                structure_hints
+                document.metadata
             )
             from langchain_core.runnables import RunnableSequence
 
@@ -337,7 +320,6 @@ class HRPolicySummarizer:
                 "structured_summary": summary,
                 "metadata": {
                     **document.metadata,
-                    "structure_hints": structure_hints,
                     "summary_stats": {
                         "original_words": len(document.page_content.split()),
                         "summary_words": len(summary.split()),
