@@ -69,7 +69,11 @@ This will download:
 - **BGE-large-en-v1.5**: Embedding model (~1.3GB)
 
 **Important Notes:**
-- **Custom Models**: To download different models, edit `model_downloader.py` and change the `model_id` variable to your desired model
+- **Custom Models**: To download different models, edit `model_downloader.py` and modify these lines:
+  ```python
+  model_id = "meta-llama/Llama-3.2-3B-Instruct"  # Change this to your desired model
+  local_dir = os.path.join(os.getcwd(), "models/meta-llama/Llama-3.2-3B-Instruct")  # Update path accordingly
+  ```
 - **Open Source Only**: This downloader only supports open-source models available on Hugging Face
 - **Model Compatibility**: Ensure the model is compatible with the transformers library and your hardware specifications
 
