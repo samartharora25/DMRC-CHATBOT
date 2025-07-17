@@ -14,9 +14,9 @@ A sophisticated HR Document RAG (Retrieval-Augmented Generation) chatbot system 
 
 ## 📋 Prerequisites
 
-- **Python**: 3.11.11 or higher
+- **Python**: 3.11.11 
 - **CUDA**: GPU with CUDA support (recommended for model inference)
-- **Memory**: Minimum 8GB RAM, 6GB VRAM recommended
+- **Memory**: Minimum 16GB RAM, 6GB VRAM minimum
 - **Storage**: ~15GB for models and data
 
 ## 🛠️ Installation
@@ -61,12 +61,17 @@ GROQ_API_KEY="your_groq_api_key_here"
 Run the model downloader to fetch required models locally:
 
 ```bash
-python model_downloader.py
+uv run model_downloader.py
 ```
 
 This will download:
 - **Llama-3.2-3B-Instruct**: Local language model (~6GB)
 - **BGE-large-en-v1.5**: Embedding model (~1.3GB)
+
+**Important Notes:**
+- **Custom Models**: To download different models, edit `model_downloader.py` and change the `model_id` variable to your desired model
+- **Open Source Only**: This downloader only supports open-source models available on Hugging Face
+- **Model Compatibility**: Ensure the model is compatible with the transformers library and your hardware specifications
 
 Models are saved in the `models/` directory for offline use.
 
@@ -158,7 +163,7 @@ Automated Q&A dataset generation:
 Run the full processing pipeline:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 This will:
@@ -173,7 +178,7 @@ This will:
 Start the interactive RAG chatbot:
 
 ```bash
-python interactive_rag_session.py
+uv run interactive_rag_session.py
 ```
 
 **Available Commands:**
@@ -196,7 +201,7 @@ python interactive_rag_session.py
 Create training datasets from your documents:
 
 ```bash
-python QAagent.py
+uv run QAagent.py
 ```
 
 Output: `qa_dataset.jsonl` with structured Q&A pairs
@@ -206,7 +211,7 @@ Output: `qa_dataset.jsonl` with structured Q&A pairs
 Verify your installation:
 
 ```bash
-python test.py
+uv run test.py
 ```
 
 ## ⚙️ Configuration
@@ -276,7 +281,7 @@ cat .env
 **3. Missing Models**
 ```bash
 # Re-download models
-python model_downloader.py
+uv run model_downloader.py
 ```
 
 **4. ChromaDB Issues**
