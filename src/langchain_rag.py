@@ -29,7 +29,7 @@ from src.chunker import PDFChunker
 class CustomEmbeddings(Embeddings):
     """Custom LangChain embeddings wrapper for your local BGE model"""
     
-    def __init__(self, model_path: str = "models/BAAI/bge-large-en-v1.5"):
+    def __init__(self, model_path: str = "BAAI/bge-large-en-v1.5"):
         print(f"🔧 Initializing CustomEmbeddings with model: {model_path}")
         
         try:

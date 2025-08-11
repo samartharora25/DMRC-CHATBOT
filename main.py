@@ -98,16 +98,16 @@ def main():
     
     try:
         # Phase 1: Document Processing
-        # print("📄 Phase 1: Document Processing")
-        # chunker = PDFChunker(pdf_path)
-        # toc = chunker.parse_toc_structure()
-        # subtopic_chunks, chapter_chunks = chunker.extract_subtopic_and_chapter_chunks(toc)
+        print("📄 Phase 1: Document Processing")
+        chunker = PDFChunker(pdf_path)
+        toc = chunker.parse_toc_structure()
+        subtopic_chunks, chapter_chunks = chunker.extract_subtopic_and_chapter_chunks(toc)
         
-        # print(f"   ✅ Extracted {len(subtopic_chunks)} subtopics, {len(chapter_chunks)} chapters")
+        print(f"   ✅ Extracted {len(subtopic_chunks)} subtopics, {len(chapter_chunks)} chapters")
         
-        # # Save chunks
-        # chunker.save_chunks(subtopic_chunks, chapter_chunks, chunks_file)
-        # chunker.close()
+        # Save chunks
+        chunker.save_chunks(subtopic_chunks, chapter_chunks, chunks_file)
+        chunker.close()
         
         # # Phase 2: Embeddings (Optional - for standalone use)
         # print("\n🔮 Phase 2: Creating Embeddings")

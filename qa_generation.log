@@ -65,3 +65,168 @@
 2025-07-16 09:00:23,660 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
 2025-07-16 09:00:23,660 - ERROR - Fatal error in main: Recursion limit of 25 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.
 For troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/GRAPH_RECURSION_LIMIT
+2025-08-11 18:24:30,543 - INFO - Starting Enhanced Q/A Generation Pipeline
+2025-08-11 18:24:30,570 - INFO - Starting Q/A generation workflow
+2025-08-11 18:24:30,589 - INFO - Loaded 7 valid summaries
+2025-08-11 18:24:30,600 - INFO - Generating Q/A for document: General_THE_YEARS_OF_TRANSFORMATION
+2025-08-11 18:24:34,996 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:24:34,998 - INFO - Generated 5 Q/A pairs for General_THE_YEARS_OF_TRANSFORMATION
+2025-08-11 18:24:34,999 - INFO - Reviewing Q/A pairs - iteration 1
+2025-08-11 18:24:43,057 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:24:43,061 - INFO - Rewriting Q/A pairs - iteration 1
+2025-08-11 18:24:47,268 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:24:47,270 - INFO - Successfully rewrote 5 Q/A pairs
+2025-08-11 18:24:47,272 - INFO - Reviewing Q/A pairs - iteration 2
+2025-08-11 18:24:59,721 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:24:59,723 - INFO - Rewriting Q/A pairs - iteration 2
+2025-08-11 18:25:06,571 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:25:06,575 - INFO - Successfully rewrote 5 Q/A pairs
+2025-08-11 18:25:06,577 - INFO - Reviewing Q/A pairs - iteration 3
+2025-08-11 18:25:18,430 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:25:18,435 - INFO - Rewriting Q/A pairs - iteration 3
+2025-08-11 18:25:24,952 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:25:24,953 - INFO - Successfully rewrote 5 Q/A pairs
+2025-08-11 18:25:24,954 - INFO - Reviewing Q/A pairs - iteration 4
+2025-08-11 18:25:36,559 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:25:36,564 - INFO - Saved 5 Q/A pairs for document General_THE_YEARS_OF_TRANSFORMATION
+2025-08-11 18:25:36,566 - INFO - Generating Q/A for document: Recruitment_Policy_POST___MANAGER_&_ABOVE_
+2025-08-11 18:25:42,524 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:25:42,530 - INFO - Generated 5 Q/A pairs for Recruitment_Policy_POST___MANAGER_&_ABOVE_
+2025-08-11 18:25:42,531 - INFO - Reviewing Q/A pairs - iteration 1
+2025-08-11 18:25:53,981 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:25:53,983 - INFO - Rewriting Q/A pairs - iteration 1
+2025-08-11 18:25:59,729 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:25:59,731 - INFO - Successfully rewrote 5 Q/A pairs
+2025-08-11 18:25:59,731 - INFO - Reviewing Q/A pairs - iteration 2
+2025-08-11 18:26:07,017 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:26:07,022 - INFO - Rewriting Q/A pairs - iteration 2
+2025-08-11 18:26:13,973 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:26:13,976 - INFO - Successfully rewrote 5 Q/A pairs
+2025-08-11 18:26:13,977 - INFO - Reviewing Q/A pairs - iteration 3
+2025-08-11 18:26:27,457 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:26:27,461 - INFO - Rewriting Q/A pairs - iteration 3
+2025-08-11 18:26:33,487 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:26:33,488 - INFO - Successfully rewrote 5 Q/A pairs
+2025-08-11 18:26:33,490 - INFO - Reviewing Q/A pairs - iteration 4
+2025-08-11 18:26:47,422 - ERROR - Unexpected error on attempt 1/3: 
+2025-08-11 18:26:49,270 - ERROR - Unexpected error on attempt 2/3: [Errno 11001] getaddrinfo failed
+2025-08-11 18:27:03,144 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:27:03,152 - INFO - Saved 5 Q/A pairs for document Recruitment_Policy_POST___MANAGER_&_ABOVE_
+2025-08-11 18:27:03,167 - INFO - Generating Q/A for document: Recruitment_Policy_SCALES_OF_PAY
+2025-08-11 18:27:08,400 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:27:08,402 - INFO - Generated 5 Q/A pairs for Recruitment_Policy_SCALES_OF_PAY
+2025-08-11 18:27:08,403 - INFO - Reviewing Q/A pairs - iteration 1
+2025-08-11 18:27:17,135 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:27:17,138 - INFO - Rewriting Q/A pairs - iteration 1
+2025-08-11 18:27:25,256 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:27:25,257 - WARNING - Failed to parse JSON response: Here are the improved Q/A pairs:
+
+[
+  {
+    "question": "What are the qualifications required for a senior leadership role like the Chief Operating Officer – Executive Education position?",
+    "answe...
+2025-08-11 18:27:25,259 - WARNING - Rewrite produced insufficient valid pairs, keeping original
+2025-08-11 18:27:25,260 - INFO - Reviewing Q/A pairs - iteration 2
+2025-08-11 18:27:37,951 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:27:37,956 - INFO - Rewriting Q/A pairs - iteration 2
+2025-08-11 18:27:43,504 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:27:43,506 - INFO - Successfully rewrote 5 Q/A pairs
+2025-08-11 18:27:43,508 - INFO - Reviewing Q/A pairs - iteration 3
+2025-08-11 18:27:54,320 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:27:54,323 - ERROR - Fatal error in main: Recursion limit of 25 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.
+For troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/GRAPH_RECURSION_LIMIT
+2025-08-11 18:33:58,930 - INFO - Starting Enhanced Q/A Generation Pipeline
+2025-08-11 18:33:58,961 - INFO - Starting Q/A generation workflow
+2025-08-11 18:33:58,964 - INFO - Loaded 7 valid summaries
+2025-08-11 18:33:58,965 - INFO - Generating Q/A for document: General_THE_YEARS_OF_TRANSFORMATION
+2025-08-11 18:34:07,066 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:34:07,070 - INFO - Generated 5 Q/A pairs for General_THE_YEARS_OF_TRANSFORMATION
+2025-08-11 18:34:07,072 - INFO - Reviewing Q/A pairs - iteration 1
+2025-08-11 18:34:24,723 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:34:24,729 - INFO - Rewriting Q/A pairs - iteration 1
+2025-08-11 18:34:31,067 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:34:31,068 - WARNING - Failed to parse JSON response: Here are the improved Q/A pairs:
+
+[
+  {
+    "question": "I'm interested in pursuing a program at IIMA. Can you tell me about the different programs offered and their duration?",
+    "answer": "As per ...
+2025-08-11 18:34:31,070 - WARNING - Rewrite produced insufficient valid pairs, keeping original
+2025-08-11 18:34:31,071 - INFO - Reviewing Q/A pairs - iteration 2
+2025-08-11 18:34:43,819 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:34:43,827 - INFO - Saved 5 Q/A pairs for document General_THE_YEARS_OF_TRANSFORMATION
+2025-08-11 18:34:43,831 - INFO - Generating Q/A for document: Recruitment_Policy_POST___MANAGER_&_ABOVE_
+2025-08-11 18:34:50,847 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:34:50,850 - INFO - Generated 5 Q/A pairs for Recruitment_Policy_POST___MANAGER_&_ABOVE_
+2025-08-11 18:34:50,854 - INFO - Reviewing Q/A pairs - iteration 1
+2025-08-11 18:35:02,287 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:35:02,290 - INFO - Rewriting Q/A pairs - iteration 1
+2025-08-11 18:35:09,779 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:35:09,781 - INFO - Successfully rewrote 5 Q/A pairs
+2025-08-11 18:35:09,782 - INFO - Reviewing Q/A pairs - iteration 2
+2025-08-11 18:35:21,215 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:35:21,219 - INFO - Saved 5 Q/A pairs for document Recruitment_Policy_POST___MANAGER_&_ABOVE_
+2025-08-11 18:35:21,221 - INFO - Generating Q/A for document: Recruitment_Policy_SCALES_OF_PAY
+2025-08-11 18:35:28,695 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:35:28,696 - INFO - Generated 5 Q/A pairs for Recruitment_Policy_SCALES_OF_PAY
+2025-08-11 18:35:28,698 - INFO - Reviewing Q/A pairs - iteration 1
+2025-08-11 18:35:38,113 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:35:38,119 - INFO - Rewriting Q/A pairs - iteration 1
+2025-08-11 18:35:47,356 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:35:47,357 - INFO - Successfully rewrote 5 Q/A pairs
+2025-08-11 18:35:47,358 - INFO - Reviewing Q/A pairs - iteration 2
+2025-08-11 18:36:00,027 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:36:00,035 - INFO - Saved 5 Q/A pairs for document Recruitment_Policy_SCALES_OF_PAY
+2025-08-11 18:36:00,037 - INFO - Generating Q/A for document: Recruitment_Policy_7TH_CPC_PAY_MATRIX
+2025-08-11 18:36:06,356 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:36:06,357 - INFO - Generated 5 Q/A pairs for Recruitment_Policy_7TH_CPC_PAY_MATRIX
+2025-08-11 18:36:06,358 - INFO - Reviewing Q/A pairs - iteration 1
+2025-08-11 18:36:18,764 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:36:18,769 - INFO - Rewriting Q/A pairs - iteration 1
+2025-08-11 18:36:25,519 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:36:25,520 - WARNING - Failed to parse JSON response: Here are the improved Q/A pairs:
+
+[
+  {
+    "question": "I'm considering a role as an Assistant General Manager. Can you tell me what pay level I would be at?",
+    "answer": "According to the policy,...
+2025-08-11 18:36:25,520 - WARNING - Rewrite produced insufficient valid pairs, keeping original
+2025-08-11 18:36:25,521 - INFO - Reviewing Q/A pairs - iteration 2
+2025-08-11 18:36:35,830 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:36:35,843 - INFO - Saved 5 Q/A pairs for document Recruitment_Policy_7TH_CPC_PAY_MATRIX
+2025-08-11 18:36:35,846 - INFO - Generating Q/A for document: General_Conduct,_Ethics_&_Disciplinary_Action_COMMUNICATIONS_TO_THE_MEDIA
+2025-08-11 18:36:42,333 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:36:42,336 - INFO - Generated 5 Q/A pairs for General_Conduct,_Ethics_&_Disciplinary_Action_COMMUNICATIONS_TO_THE_MEDIA
+2025-08-11 18:36:42,338 - INFO - Reviewing Q/A pairs - iteration 1
+2025-08-11 18:36:56,405 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:36:56,408 - INFO - Rewriting Q/A pairs - iteration 1
+2025-08-11 18:37:03,443 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:37:03,445 - INFO - Successfully rewrote 5 Q/A pairs
+2025-08-11 18:37:03,446 - INFO - Reviewing Q/A pairs - iteration 2
+2025-08-11 18:37:13,482 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:37:13,486 - INFO - Saved 5 Q/A pairs for document General_Conduct,_Ethics_&_Disciplinary_Action_COMMUNICATIONS_TO_THE_MEDIA
+2025-08-11 18:37:13,487 - INFO - Generating Q/A for document: General_Conduct,_Ethics_&_Disciplinary_Action_PROTECTION_&_PROPER_USE_OF_IIMA_ASSETS
+2025-08-11 18:37:18,753 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:37:18,754 - INFO - Generated 5 Q/A pairs for General_Conduct,_Ethics_&_Disciplinary_Action_PROTECTION_&_PROPER_USE_OF_IIMA_ASSETS
+2025-08-11 18:37:18,755 - INFO - Reviewing Q/A pairs - iteration 1
+2025-08-11 18:37:29,064 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:37:29,069 - INFO - Rewriting Q/A pairs - iteration 1
+2025-08-11 18:37:35,270 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:37:35,273 - INFO - Successfully rewrote 5 Q/A pairs
+2025-08-11 18:37:35,276 - INFO - Reviewing Q/A pairs - iteration 2
+2025-08-11 18:37:45,533 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:37:45,540 - INFO - Saved 5 Q/A pairs for document General_Conduct,_Ethics_&_Disciplinary_Action_PROTECTION_&_PROPER_USE_OF_IIMA_ASSETS
+2025-08-11 18:37:45,542 - INFO - Generating Q/A for document: General_Conduct,_Ethics_&_Disciplinary_Action_EMPLOYEE_ARRESTED_FOR_CRIMINAL_OFFENCE
+2025-08-11 18:37:52,320 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:37:52,323 - INFO - Generated 5 Q/A pairs for General_Conduct,_Ethics_&_Disciplinary_Action_EMPLOYEE_ARRESTED_FOR_CRIMINAL_OFFENCE
+2025-08-11 18:37:52,324 - INFO - Reviewing Q/A pairs - iteration 1
+2025-08-11 18:38:04,173 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:38:04,175 - INFO - Rewriting Q/A pairs - iteration 1
+2025-08-11 18:38:12,533 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:38:12,537 - INFO - Successfully rewrote 5 Q/A pairs
+2025-08-11 18:38:12,539 - INFO - Reviewing Q/A pairs - iteration 2
+2025-08-11 18:38:22,633 - INFO - HTTP Request: POST https://api.together.xyz/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-11 18:38:22,639 - INFO - Saved 5 Q/A pairs for document General_Conduct,_Ethics_&_Disciplinary_Action_EMPLOYEE_ARRESTED_FOR_CRIMINAL_OFFENCE
+2025-08-11 18:38:22,639 - INFO - Processing complete! Generated Q/A pairs for 7 documents
+2025-08-11 18:38:22,640 - INFO - Summary: 35 total Q/A pairs, 2.0 avg iterations
+2025-08-11 18:38:22,641 - INFO - Q/A generation pipeline completed successfully!

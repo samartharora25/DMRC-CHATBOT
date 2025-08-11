@@ -12,13 +12,13 @@ def interactive_rag_session():
     try:
         rag = HRDocumentRAG(
             chunks_file="chunks.json",
-            chroma_db_path="./hr_chroma_db"
+            chroma_db_path="./hr_chroma_db_interactive"
         )
         
         # Build system with debugging enabled
         print("\n🔧 Building RAG system...")
         rag.build_rag_system(
-            force_rebuild=False,  # Set to True if you want to rebuild
+            force_rebuild=True,  # Force rebuild to avoid stale/locked DB issues
             groq_model="llama3-8b-8192",
             temperature=0.1,
             max_tokens=1024

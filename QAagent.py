@@ -35,7 +35,7 @@ MODEL = "meta-llama/Llama-3-70b-chat-hf"
 SUMMARY_FILE = "summaries.json"
 OUTPUT_FILE = "qa_dataset.jsonl"
 MIN_SUMMARY_WORDS = 100
-REVIEW_REWRITE_ITERATIONS = 4
+REVIEW_REWRITE_ITERATIONS = 2
 MAX_RETRIES = 3
 TIMEOUT = 120.0
 
@@ -266,6 +266,12 @@ async def review_node(state: Dict[str, Any]) -> Dict[str, Any]:
         state["iteration_count"] += 1
         logger.info(f"Reviewing Q/A pairs - iteration {state['iteration_count']}")
         
+        # Safety guard: if review cycles exceed a safe bound, force save
+        if state["iteration_count"] > REVIEW_REWRITE_ITERATIONS * 2:
+            logger.warning("Exceeded safe review iterations; forcing save on next transition")
+            state["iteration_count"] = REVIEW_REWRITE_ITERATIONS  # trigger save via router
+            return state
+        
         prompt = f"""You are an expert HR policy reviewer. Analyze the following {len(state['qa_pairs'])} question-answer pairs and provide specific, actionable suggestions for improvement.
 
 EVALUATION CRITERIA:
@@ -474,8 +480,8 @@ async def main():
         # Create and run workflow
         app = create_workflow()
         
-        # Run the workflow
-        final_state = await app.ainvoke({})
+        # Run the workflow with increased recursion limit
+        final_state = await app.ainvoke({}, config={"recursion_limit": 300})
         
         if final_state.get("error"):
             logger.error(f"Workflow completed with error: {final_state['error']}")
